@@ -16,6 +16,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     zlib1g-dev \
     libbz2-dev \
     liblzma-dev \
+    libncurses5-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV SOFT=/soft
@@ -30,8 +31,6 @@ RUN curl -L https://github.com/ebiggers/libdeflate/releases/download/v1.26/libde
     && cmake --install /tmp/libdeflate-build \
     && rm -rf /tmp/libdeflate-1.26 /tmp/libdeflate-build
 
-ENV PATH="$SOFT/libdeflate-1.26/bin:$PATH"
-
 # HTSlib 1.24, дата релиза 09.07.2026
 RUN curl -L https://github.com/samtools/htslib/releases/download/1.24/htslib-1.24.tar.bz2 \
     | tar -xj -C /tmp \
@@ -45,6 +44,24 @@ RUN curl -L https://github.com/samtools/htslib/releases/download/1.24/htslib-1.2
     && make install \
     && rm -rf /tmp/htslib-1.24
 
-ENV PATH="$SOFT/htslib-1.24/bin:$SOFT/libdeflate-1.26/bin:$PATH"
+# Samtools 1.24, дата релиза 09.07.2026
+RUN curl -L https://github.com/samtools/samtools/releases/download/1.24/samtools-1.24.tar.bz2 \
+    | tar -xj -C /tmp \
+    && cd /tmp/samtools-1.24 \
+    && CPPFLAGS="-I$SOFT/htslib-1.24/include" \
+    LDFLAGS="-L$SOFT/htslib-1.24/lib -Wl,-rpath,$SOFT/htslib-1.24/lib" \
+    ./configure \
+    --prefix="$SOFT/samtools-1.24" \
+    --with-htslib="$SOFT/htslib-1.24" \
+    && make -j "$(nproc)" \
+    && make install \
+    && rm -rf /tmp/samtools-1.24
 
+ENV SAMTOOLS="$SOFT/samtools-1.24/bin/samtools"
 
+ENV PATH="$SOFT/libdeflate-1.26/ \
+    bin:$SOFT/htslib-1.24/ \
+    bin:$SOFT/samtools-1.24/ \
+    bin:$SOFT/bcftools-1.24/ \
+    bin:$SOFT/vcftools-0.1.17/ \
+    bin:$PATH"
