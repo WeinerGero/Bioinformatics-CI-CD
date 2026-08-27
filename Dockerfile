@@ -1,10 +1,10 @@
 FROM ubuntu:22.04
 
-# уменьшаем размер образа, отключая установку рекомендуемых и предлагаемых пакетов
+# уменьшает размер образа, отключая установку рекомендуемых и предлагаемых пакетов
 RUN echo 'APT::Install-Suggests "0";' >> /etc/apt/apt.conf.d/00-docker \
     && echo 'APT::Install-Recommends "0";' >> /etc/apt/apt.conf.d/00-docker
 
-# устанавливаем базовые пакеты
+# устанавливает базовые пакеты и зависимости для сборки приложений
 RUN DEBIAN_FRONTEND=noninteractive \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -13,7 +13,9 @@ RUN DEBIAN_FRONTEND=noninteractive \
     ca-certificates \
     cmake \
     build-essential \
-    # очищаем кэш, чтобы образ не раздувался
+    zlib1g-dev \
+    libbz2-dev \
+    liblzma-dev \
     && rm -rf /var/lib/apt/lists/*
 
 ENV SOFT=/soft
@@ -26,7 +28,23 @@ RUN curl -L https://github.com/ebiggers/libdeflate/releases/download/v1.26/libde
     -DCMAKE_INSTALL_PREFIX="$SOFT/libdeflate-1.26" \
     && cmake --build /tmp/libdeflate-build --parallel "$(nproc)" \
     && cmake --install /tmp/libdeflate-build \
-    # очищаем временные файлы сборки, чтобы образ не раздувался
     && rm -rf /tmp/libdeflate-1.26 /tmp/libdeflate-build
 
 ENV PATH="$SOFT/libdeflate-1.26/bin:$PATH"
+
+# HTSlib 1.24, дата релиза 09.07.2026
+RUN curl -L https://github.com/samtools/htslib/releases/download/1.24/htslib-1.24.tar.bz2 \
+    | tar -xj -C /tmp \
+    && cd /tmp/htslib-1.24 \
+    && CPPFLAGS="-I$SOFT/libdeflate-1.26/include" \
+    LDFLAGS="-L$SOFT/libdeflate-1.26/lib -Wl,-rpath,$SOFT/libdeflate-1.26/lib" \
+    ./configure \
+    --prefix="$SOFT/htslib-1.24" \
+    --with-libdeflate \
+    && make -j "$(nproc)" \
+    && make install \
+    && rm -rf /tmp/htslib-1.24
+
+ENV PATH="$SOFT/htslib-1.24/bin:$SOFT/libdeflate-1.26/bin:$PATH"
+
+
