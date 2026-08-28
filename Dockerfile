@@ -17,6 +17,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     libbz2-dev \
     liblzma-dev \
     libncurses5-dev \
+    pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
 ENV SOFT=/soft
@@ -30,6 +31,7 @@ RUN curl -L https://github.com/ebiggers/libdeflate/releases/download/v1.26/libde
     && cmake --build /tmp/libdeflate-build --parallel "$(nproc)" \
     && cmake --install /tmp/libdeflate-build \
     && rm -rf /tmp/libdeflate-1.26 /tmp/libdeflate-build
+ENV LIBDEFLATE_HOME="$SOFT/libdeflate-1.26"
 
 # HTSlib 1.24, дата релиза 09.07.2026
 RUN curl -L https://github.com/samtools/htslib/releases/download/1.24/htslib-1.24.tar.bz2 \
@@ -43,6 +45,7 @@ RUN curl -L https://github.com/samtools/htslib/releases/download/1.24/htslib-1.2
     && make -j "$(nproc)" \
     && make install \
     && rm -rf /tmp/htslib-1.24
+ENV HTSLIB_HOME="$SOFT/htslib-1.24"
 
 # Samtools 1.24, дата релиза 09.07.2026
 RUN curl -L https://github.com/samtools/samtools/releases/download/1.24/samtools-1.24.tar.bz2 \
@@ -56,12 +59,35 @@ RUN curl -L https://github.com/samtools/samtools/releases/download/1.24/samtools
     && make -j "$(nproc)" \
     && make install \
     && rm -rf /tmp/samtools-1.24
+ENV SAMTOOLS_HOME="$SOFT/samtools-1.24"
+
+# BCFtools 1.24, дата релиза 09.07.2026
+RUN curl -L https://github.com/samtools/bcftools/releases/download/1.24/bcftools-1.24.tar.bz2 \
+    | tar -xj -C /tmp \
+    && cd /tmp/bcftools-1.24 \
+    && CPPFLAGS="-I$SOFT/htslib-1.24/include" \
+    LDFLAGS="-L$SOFT/htslib-1.24/lib -Wl,-rpath,$SOFT/htslib-1.24/lib" \
+    ./configure \
+    --prefix="$SOFT/bcftools-1.24" \
+    --with-htslib="$SOFT/htslib-1.24" \
+    && make -j "$(nproc)" \
+    && make install \
+    && rm -rf /tmp/bcftools-1.24
+ENV BCFTOOLS_HOME="$SOFT/bcftools-1.24"
+
+# VCFtools 0.1.17, дата релиза 15.05.2025
+RUN curl -L https://github.com/vcftools/vcftools/releases/download/v0.1.17/vcftools-0.1.17.tar.gz \
+    | tar -xz -C /tmp \
+    && cd /tmp/vcftools-0.1.17 \
+    && ./configure --prefix="$SOFT/vcftools-0.1.17" \
+    && make -j "$(nproc)" \
+    && make install \
+    && rm -rf /tmp/vcftools-0.1.17
+ENV VCFTOOLS_HOME="$SOFT/vcftools-0.1.17"
+
+
+ENV PATH="$LIBDEFLATE_HOME/bin:$HTSLIB_HOME/bin:$SAMTOOLS_HOME/bin:$BCFTOOLS_HOME/bin:$VCFTOOLS_HOME/bin:$PATH"
 
 ENV SAMTOOLS="$SOFT/samtools-1.24/bin/samtools"
-
-ENV PATH="$SOFT/libdeflate-1.26/ \
-    bin:$SOFT/htslib-1.24/ \
-    bin:$SOFT/samtools-1.24/ \
-    bin:$SOFT/bcftools-1.24/ \
-    bin:$SOFT/vcftools-0.1.17/ \
-    bin:$PATH"
+ENV BCFTOOLS="$SOFT/bcftools-1.24/bin/bcftools"
+ENV VCFTOOLS="$SOFT/vcftools-0.1.17/bin/vcftools"
