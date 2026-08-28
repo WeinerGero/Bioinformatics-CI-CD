@@ -18,6 +18,7 @@ RUN DEBIAN_FRONTEND=noninteractive \
     liblzma-dev \
     libncurses5-dev \
     pkg-config \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 ENV SOFT=/soft
