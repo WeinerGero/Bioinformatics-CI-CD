@@ -6,12 +6,6 @@ Dockerfile для сборки Docker-образа на базе Ubuntu 22.04 с
 
 ![Docker](https://img.shields.io/badge/Docker-Container-2496ED?logo=docker&logoColor=white)
 ![Ubuntu](https://img.shields.io/badge/Ubuntu-22.04-E95420?logo=ubuntu&logoColor=white)
-![CMake](https://img.shields.io/badge/CMake-Build-064F8C?logo=cmake&logoColor=white)
-![GNU Make](https://img.shields.io/badge/GNU_Make-Build-A42E2B?logo=gnu&logoColor=white)
-![C](https://img.shields.io/badge/C-C11-A8B9CC?logo=c&logoColor=black)
-![C++](https://img.shields.io/badge/C++-Build-00599C?logo=cplusplus&logoColor=white)
-![Bash](https://img.shields.io/badge/Bash-Shell-4EAA25?logo=gnubash&logoColor=white)
-
 ![Samtools](https://img.shields.io/badge/Samtools-1.24-2E8B57)
 ![HTSlib](https://img.shields.io/badge/HTSlib-1.24-4682B4)
 ![BCFtools](https://img.shields.io/badge/BCFtools-1.24-6A5ACD)
