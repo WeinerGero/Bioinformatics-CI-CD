@@ -104,6 +104,6 @@ RUN mkdir -p /content \
     | tar -xz -C /tmp \
     && mv /tmp/SNP-addition-main /content/SNP-addition \
     && python3 -m pip install --no-cache-dir \
-    -r /content/SNP-addition/requirements.txtъ
+    -r /content/SNP-addition/requirements.txt
 
 WORKDIR /content/SNP-addition
