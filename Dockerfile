@@ -18,6 +18,8 @@ RUN DEBIAN_FRONTEND=noninteractive \
     liblzma-dev \
     libncurses5-dev \
     pkg-config \
+    python3 \
+    python3-pip \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
@@ -92,3 +94,16 @@ ENV PATH="$LIBDEFLATE_HOME/bin:$HTSLIB_HOME/bin:$SAMTOOLS_HOME/bin:$BCFTOOLS_HOM
 ENV SAMTOOLS="$SOFT/samtools-1.24/bin/samtools"
 ENV BCFTOOLS="$SOFT/bcftools-1.24/bin/bcftools"
 ENV VCFTOOLS="$SOFT/vcftools-0.1.17/bin/vcftools"
+
+#####################################################################
+# Добавлят скрипт REF-ALT
+
+# устанавливает SNP-addition и зависимости Python
+RUN mkdir -p /content \
+    && curl -L https://github.com/WeinerGero/SNP-addition/archive/refs/heads/main.tar.gz \
+    | tar -xz -C /tmp \
+    && mv /tmp/SNP-addition-main /content/SNP-addition \
+    && python3 -m pip install --no-cache-dir \
+    -r /content/SNP-addition/requirements.txtъ
+
+WORKDIR /content/SNP-addition
